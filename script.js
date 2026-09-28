@@ -9,12 +9,8 @@ let food = {};
 let dx = 1;
 let dy = 0;
 let score = 0;
-let isGameOver = false;
 let gameInterval;
-
-setTimeout(() => {
-    gameInterval = setInterval(gameLoop, 100);
-}, 3000);
+let isGameOver = false;
  
 function generateFood() {
     food = {
