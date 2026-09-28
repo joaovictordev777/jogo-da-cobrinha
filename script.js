@@ -1,7 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
-const restartButton = document.getElementById('restartButton'); // Novo!
+const restartButton = document.getElementById('restartButton');
 
 const gridSize = 20;
 let snake = [];
@@ -103,6 +103,54 @@ document.addEventListener('keydown', e => {
         case 'ArrowRight':
             if (dx === 0) { dx = 1; dy = 0; }
             break;
+    }
+});
+
+    let inicioX = 0;
+let inicioY = 0;
+
+canvas.addEventListener('touchstart', (e) => {
+    inicioX = e.touches[0].clientX;
+    inicioY = e.touches[0].clientY;
+});
+
+canvas.addEventListener('touchend', (e) => {
+    const fimX = e.changedTouches[0].clientX;
+    const fimY = e.changedTouches[0].clientY;
+
+    const diferencaX = fimX - inicioX;
+    const diferencaY = fimY - inicioY;
+
+    if (Math.abs(diferencaX) < 30 && Math.abs(diferencaY) < 30) {
+        return;
+    }
+
+    if (Math.abs(diferencaX) > Math.abs(diferencaY)) {
+        if (diferencaX > 0) {
+            if (dx === 0) {
+                dx = 1;
+                dy = 0;
+            }
+        } else {
+            if (dx === 0) {
+                dx = -1;
+                dy = 0;
+            }
+        }
+    }
+
+    else {
+        if (diferencaY > 0) {
+            if (dy === 0) {
+                dx = 0;
+                dy = 1;
+            }
+        } else {
+            if (dy === 0) {
+                dx = 0;
+                dy = -1;
+            }
+        }
     }
 });
 
