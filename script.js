@@ -9,8 +9,12 @@ let food = {};
 let dx = 1;
 let dy = 0;
 let score = 0;
-let gameInterval;
 let isGameOver = false;
+let gameInterval;
+
+setTimeout(() => {
+    gameInterval = setInterval(gameLoop, 100);
+}, 3000);
  
 function generateFood() {
     food = {
@@ -136,13 +140,11 @@ canvas.addEventListener('touchend', (e) => {
     if (Math.abs(diferencaX) > Math.abs(diferencaY)) {
 
         if (diferencaX > 0) {
-            // Direita
             if (dx === 0) {
                 dx = 1;
                 dy = 0;
             }
         } else {
-            // Esquerda
             if (dx === 0) {
                 dx = -1;
                 dy = 0;
@@ -150,15 +152,12 @@ canvas.addEventListener('touchend', (e) => {
         }
 
     } else {
-
         if (diferencaY > 0) {
-            // Baixo
             if (dy === 0) {
                 dx = 0;
                 dy = 1;
             }
         } else {
-            // Cima
             if (dy === 0) {
                 dx = 0;
                 dy = -1;
