@@ -110,11 +110,19 @@ document.addEventListener('keydown', e => {
 let inicioY = 0;
 
 canvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+
     inicioX = e.touches[0].clientX;
     inicioY = e.touches[0].clientY;
-});
+}, { passive: false });
+
+canvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+}, { passive: false });
 
 canvas.addEventListener('touchend', (e) => {
+    e.preventDefault();
+
     const fimX = e.changedTouches[0].clientX;
     const fimY = e.changedTouches[0].clientY;
 
@@ -126,33 +134,38 @@ canvas.addEventListener('touchend', (e) => {
     }
 
     if (Math.abs(diferencaX) > Math.abs(diferencaY)) {
+
         if (diferencaX > 0) {
+            // Direita
             if (dx === 0) {
                 dx = 1;
                 dy = 0;
             }
         } else {
+            // Esquerda
             if (dx === 0) {
                 dx = -1;
                 dy = 0;
             }
         }
-    }
 
-    else {
+    } else {
+
         if (diferencaY > 0) {
+            // Baixo
             if (dy === 0) {
                 dx = 0;
                 dy = 1;
             }
         } else {
+            // Cima
             if (dy === 0) {
                 dx = 0;
                 dy = -1;
             }
         }
     }
-});
+}, { passive: false });
 
 
 restartButton.addEventListener('click', startGame);

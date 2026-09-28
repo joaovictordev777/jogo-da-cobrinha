@@ -17,6 +17,7 @@ h1 {
 #gameCanvas {
     background-color: #000;
     border: 2px solid #eee;
+    touch-action: none;
 }
 
 #score {
