@@ -10,7 +10,18 @@ O clássico Jogo da Cobrinha, no navegador e no celular. Feito com **TypeScript*
 | Pausar/retomar | `Espaço`, `P` ou `Esc`     | Botão de pausa               |
 | Começar        | `Enter` ou qualquer seta   | Botão **Jogar**              |
 | Ligar/desligar som | `M`                    | Botão de som                 |
+| Dificuldade    | `1` `2` `3`                | Seletor na tela inicial      |
 | Como jogar     | Botão **?**                | Botão **?**                  |
+
+### Dificuldade
+
+| Nível       | Velocidade                         | Paredes                                  |
+| ----------- | ---------------------------------- | ---------------------------------------- |
+| **Fácil**   | Lenta, acelera pouco               | Atravessáveis: sai de um lado, entra do outro |
+| **Normal**  | O clássico                         | Bater é fim de jogo                      |
+| **Difícil** | Rápida desde o início, acelera mais | Bater é fim de jogo                      |
+
+A dificuldade é escolhida na tela inicial ou no fim de jogo, e cada nível tem o próprio recorde. Os valores ficam em `src/game/config.ts`.
 
 A cobra acelera um pouco a cada frutinha. Na primeira visita aparece um mini tutorial. O recorde e a preferência de som ficam salvos no navegador.
 
@@ -45,7 +56,7 @@ src/
 ├── audio/
 │   └── Sound.ts         # Efeitos sonoros com Web Audio
 ├── game/
-│   ├── config.ts        # Tamanho do tabuleiro e velocidade
+│   ├── config.ts        # Tamanho do tabuleiro e níveis de dificuldade
 │   ├── types.ts
 │   ├── logic.ts         # Regras puras (mover, comer, colidir) — sem DOM
 │   └── Game.ts          # Loop de jogo, fila de comandos, pausa

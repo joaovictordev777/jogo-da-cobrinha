@@ -1,3 +1,4 @@
+import type { Difficulty, DifficultyId } from '../game/config';
 import type { GameState } from '../game/types';
 import { $ } from './dom';
 
@@ -10,7 +11,7 @@ interface OverlayContent {
 const OVERLAY: Partial<Record<GameState['status'], OverlayContent>> = {
   ready: {
     title: 'Pronto?',
-    text: 'Coma as frutinhas, cresça e não bata nas paredes nem em você mesmo.',
+    text: '',
     button: 'Jogar',
   },
   paused: {
@@ -35,6 +36,7 @@ export interface HudActions {
   onPause(): void;
   onMute(): void;
   onHelp(): void;
+  onDifficulty(id: DifficultyId): void;
 }
 
 /** Placar, botões do topo e a camada de mensagens sobre o tabuleiro. */
@@ -49,6 +51,11 @@ export class Hud {
   private readonly overlayText = $('overlayText');
   private readonly overlayButton = $<HTMLButtonElement>('overlayButton');
   private readonly overlayHelp = $<HTMLButtonElement>('overlayHelp');
+  private readonly difficulty = $('difficulty');
+  private readonly difficultyHint = $('difficultyHint');
+  private readonly bestLevel = $('bestLevel');
+  private readonly board = $('board');
+  private readonly difficultyButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-difficulty]'));
 
   constructor(actions: HudActions) {
     this.overlayButton.addEventListener('click', actions.onPrimary);
@@ -56,6 +63,19 @@ export class Hud {
     this.muteButton.addEventListener('click', actions.onMute);
     this.overlayHelp.addEventListener('click', actions.onHelp);
     $('helpButton').addEventListener('click', actions.onHelp);
+    for (const button of this.difficultyButtons) {
+      button.addEventListener('click', () => actions.onDifficulty(button.dataset.difficulty as DifficultyId));
+    }
+  }
+
+  setDifficulty(difficulty: Difficulty): void {
+    for (const button of this.difficultyButtons) {
+      button.setAttribute('aria-pressed', String(button.dataset.difficulty === difficulty.id));
+    }
+    this.difficultyHint.textContent = difficulty.description;
+    this.bestLevel.textContent = difficulty.label;
+    // Borda tracejada indica paredes atravessáveis.
+    this.board.dataset.wrap = String(difficulty.wrap);
   }
 
   update(state: GameState, best: number, isNewRecord: boolean): void {
@@ -78,7 +98,10 @@ export class Hud {
     this.overlayTitle.textContent = content.title;
     this.overlayText.textContent =
       state.status === 'over' ? `Você fez ${state.score} ${state.score === 1 ? 'ponto' : 'pontos'}.` : content.text;
+    this.overlayText.hidden = !this.overlayText.textContent;
     this.overlayButton.textContent = content.button;
+    // A dificuldade só pode ser trocada fora de uma partida.
+    this.difficulty.hidden = state.status === 'paused';
     this.overlayBadge.hidden = !(finished && isNewRecord);
     this.overlayHelp.hidden = state.status !== 'ready';
     this.overlay.dataset.status = state.status;

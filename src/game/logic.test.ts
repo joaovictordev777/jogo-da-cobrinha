@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { createInitialState, spawnFood, step, tickDuration } from './logic';
-import { SPEED } from './config';
+import { DIFFICULTIES } from './config';
 import type { GameState } from './types';
 
 const fixedRng = (value: number) => () => value;
 
 function running(overrides: Partial<GameState> = {}): GameState {
-  return { ...createInitialState(10, 10, fixedRng(0)), status: 'running', ...overrides };
+  return { ...createInitialState(10, 10, { rng: fixedRng(0) }), status: 'running', ...overrides };
 }
 
 describe('createInitialState', () => {
   it('coloca a cobra no centro, virada para a direita', () => {
-    const state = createInitialState(10, 10, fixedRng(0));
+    const state = createInitialState(10, 10, { rng: fixedRng(0) });
     expect(state.snake).toEqual([
       { x: 5, y: 5 },
       { x: 4, y: 5 },
@@ -65,6 +65,27 @@ describe('step', () => {
     expect(state.status).toBe('over');
   });
 
+  it('com paredes atravessáveis, sai de um lado e entra do outro', () => {
+    const right = step(running({ wrap: true, snake: [{ x: 9, y: 4 }], food: null }), 'right').state;
+    expect(right.status).toBe('running');
+    expect(right.snake[0]).toEqual({ x: 0, y: 4 });
+
+    const up = step(running({ wrap: true, snake: [{ x: 3, y: 0 }], direction: 'up', food: null }), 'up').state;
+    expect(up.snake[0]).toEqual({ x: 3, y: 9 });
+  });
+
+  it('com paredes atravessáveis, ainda morre ao bater em si mesma', () => {
+    const snake = [
+      { x: 9, y: 0 },
+      { x: 9, y: 1 },
+      { x: 0, y: 1 },
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+    ];
+    const { state } = step(running({ wrap: true, snake, direction: 'up', food: null }), 'right');
+    expect(state.status).toBe('over');
+  });
+
   it('termina ao bater em si mesma', () => {
     const snake = [
       { x: 2, y: 2 },
@@ -103,8 +124,16 @@ describe('step', () => {
 
 describe('tickDuration', () => {
   it('acelera com a pontuação até o limite', () => {
-    expect(tickDuration(0)).toBe(SPEED.initialTickMs);
-    expect(tickDuration(5)).toBeLessThan(tickDuration(0));
-    expect(tickDuration(10_000)).toBe(SPEED.minTickMs);
+    const normal = DIFFICULTIES.normal;
+    expect(tickDuration(0, normal)).toBe(normal.initialTickMs);
+    expect(tickDuration(5, normal)).toBeLessThan(tickDuration(0, normal));
+    expect(tickDuration(10_000, normal)).toBe(normal.minTickMs);
+  });
+
+  it('é mais lento no fácil e mais rápido no difícil', () => {
+    for (const score of [0, 10, 30]) {
+      expect(tickDuration(score, DIFFICULTIES.easy)).toBeGreaterThan(tickDuration(score, DIFFICULTIES.normal));
+      expect(tickDuration(score, DIFFICULTIES.hard)).toBeLessThan(tickDuration(score, DIFFICULTIES.normal));
+    }
   });
 });

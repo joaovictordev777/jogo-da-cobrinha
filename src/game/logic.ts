@@ -1,4 +1,4 @@
-import { INITIAL_LENGTH, SPEED } from './config';
+import { INITIAL_LENGTH, type Difficulty } from './config';
 import type { Direction, GameState, Point, Rng } from './types';
 
 /*
@@ -40,7 +40,13 @@ export function spawnFood(snake: Point[], cols: number, rows: number, rng: Rng =
   return { x: index % cols, y: Math.floor(index / cols) };
 }
 
-export function createInitialState(cols: number, rows: number, rng: Rng = Math.random): GameState {
+export interface InitialOptions {
+  /** Paredes atravessáveis (modo Fácil). */
+  wrap?: boolean;
+  rng?: Rng;
+}
+
+export function createInitialState(cols: number, rows: number, { wrap = false, rng = Math.random }: InitialOptions = {}): GameState {
   const head = { x: Math.floor(cols / 2), y: Math.floor(rows / 2) };
   const snake = Array.from({ length: INITIAL_LENGTH }, (_, i) => ({ x: head.x - i, y: head.y }));
   return {
@@ -51,6 +57,7 @@ export function createInitialState(cols: number, rows: number, rng: Rng = Math.r
     food: spawnFood(snake, cols, rows, rng),
     score: 0,
     status: 'ready',
+    wrap,
   };
 }
 
@@ -67,7 +74,8 @@ export function step(state: GameState, requested: Direction, rng: Rng = Math.ran
   const { cols, rows } = state;
   const head = state.snake[0]!;
   const v = VECTORS[direction];
-  const next = { x: head.x + v.x, y: head.y + v.y };
+  let next = { x: head.x + v.x, y: head.y + v.y };
+  if (state.wrap) next = { x: (next.x + cols) % cols, y: (next.y + rows) % rows };
 
   const ate = state.food !== null && samePoint(next, state.food);
   // Se não comeu, a cauda sai do lugar neste mesmo passo — então pode ser ocupada.
@@ -99,6 +107,6 @@ export function step(state: GameState, requested: Direction, rng: Rng = Math.ran
 }
 
 /** Intervalo entre passos para uma dada pontuação — o jogo acelera aos poucos. */
-export function tickDuration(score: number): number {
-  return Math.max(SPEED.minTickMs, SPEED.initialTickMs - score * SPEED.stepPerFood);
+export function tickDuration(score: number, difficulty: Difficulty): number {
+  return Math.max(difficulty.minTickMs, difficulty.initialTickMs - score * difficulty.stepPerFood);
 }

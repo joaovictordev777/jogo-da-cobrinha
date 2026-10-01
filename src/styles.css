@@ -346,8 +346,85 @@ button {
   animation: pop 400ms cubic-bezier(0.2, 0.9, 0.3, 1.4);
 }
 
-.overlay__badge[hidden] {
+.overlay__badge[hidden],
+.overlay__text[hidden],
+.difficulty[hidden] {
   display: none;
+}
+
+/* ---------- Seletor de dificuldade ---------- */
+
+.difficulty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.difficulty__options {
+  display: inline-flex;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.difficulty__option {
+  padding: 6px 14px;
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 150ms,
+    color 150ms;
+}
+
+.difficulty__option:hover {
+  color: var(--text);
+}
+
+.difficulty__option[aria-pressed='true'] {
+  background: var(--text);
+  color: var(--bg);
+}
+
+.difficulty__option[data-difficulty='easy'][aria-pressed='true'] {
+  background: var(--accent);
+  color: #052e16;
+}
+
+.difficulty__option[data-difficulty='hard'][aria-pressed='true'] {
+  background: var(--danger);
+  color: #2a0710;
+}
+
+.difficulty__hint {
+  min-height: 1.4em;
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* Modo Fácil: borda tracejada indica que dá para atravessar as paredes. */
+.board[data-wrap='true'] {
+  border: 2px dashed rgba(74, 222, 128, 0.45);
+}
+
+.stat__level {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--muted);
+  opacity: 0.8;
 }
 
 @keyframes pop {
@@ -388,6 +465,26 @@ button {
   .overlay .link-button {
     padding: 4px 8px;
     font-size: 0.85rem;
+  }
+
+  .difficulty {
+    margin-bottom: 2px;
+  }
+
+  .difficulty__option {
+    padding: 5px 10px;
+    font-size: 0.8rem;
+  }
+
+  .difficulty__hint {
+    font-size: 0.78rem;
+  }
+}
+
+/* Tabuleiro muito pequeno com o selo de recorde: falta espaço para a descrição do nível. */
+@container (max-width: 260px) {
+  .overlay__card:has(.overlay__badge:not([hidden])) .difficulty__hint {
+    display: none;
   }
 }
 
@@ -495,7 +592,7 @@ kbd {
 @media (pointer: coarse) {
   .app {
     --gap: 12px;
-    --board-size: min(100%, 520px, calc(100svh - 345px));
+    --board-size: min(100%, 520px, calc(100svh - 355px));
     grid-template-areas:
       'header'
       'hud'
@@ -520,7 +617,7 @@ kbd {
 @media (pointer: coarse) and (max-height: 700px) {
   .app {
     --dpad-key: 50px;
-    --board-size: min(100%, 520px, calc(100svh - 320px));
+    --board-size: min(100%, 520px, calc(100svh - 330px));
   }
 }
 
