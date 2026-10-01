@@ -30,6 +30,14 @@ export function saveNumber(key: string, value: number): void {
   write(key, String(value));
 }
 
+export function loadString(key: string): string | null {
+  return read(key);
+}
+
+export function saveString(key: string, value: string): void {
+  write(key, value);
+}
+
 export function loadFlag(key: string): boolean {
   return read(key) === '1';
 }
@@ -42,4 +50,10 @@ export const KEYS = {
   highScore: 'recorde',
   muted: 'mudo',
   tutorialSeen: 'tutorial-visto',
+  difficulty: 'dificuldade',
 } as const;
+
+/** Recorde separado por dificuldade. O Normal usa a chave antiga para manter recordes já salvos. */
+export function highScoreKey(difficulty: string): string {
+  return difficulty === 'normal' ? KEYS.highScore : `${KEYS.highScore}:${difficulty}`;
+}

@@ -49,7 +49,7 @@
           <span class="stat__value" id="score">0</span>
         </div>
         <div class="stat stat--best">
-          <span class="stat__label">Recorde</span>
+          <span class="stat__label">Recorde <small class="stat__level" id="bestLevel">Normal</small></span>
           <span class="stat__value" id="best">0</span>
         </div>
       </section>
@@ -62,6 +62,14 @@
             <p class="overlay__badge" id="overlayBadge" hidden>Novo recorde!</p>
             <h2 class="overlay__title" id="overlayTitle"></h2>
             <p class="overlay__text" id="overlayText"></p>
+            <div class="difficulty" id="difficulty">
+              <div class="difficulty__options" role="group" aria-label="Dificuldade">
+                <button class="difficulty__option" type="button" data-difficulty="easy" aria-pressed="false">Fácil</button>
+                <button class="difficulty__option" type="button" data-difficulty="normal" aria-pressed="false">Normal</button>
+                <button class="difficulty__option" type="button" data-difficulty="hard" aria-pressed="false">Difícil</button>
+              </div>
+              <p class="difficulty__hint" id="difficultyHint"></p>
+            </div>
             <button class="button" id="overlayButton" type="button"></button>
             <button class="link-button" id="overlayHelp" type="button">Como jogar?</button>
           </div>
@@ -78,6 +86,7 @@
       <footer class="hint">
         <span><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> ou <kbd>WASD</kbd> para mover</span>
         <span><kbd>Espaço</kbd> para pausar</span>
+        <span><kbd>1</kbd><kbd>2</kbd><kbd>3</kbd> dificuldade</span>
         <span><kbd>M</kbd> para som</span>
       </footer>
     </main>

@@ -14,7 +14,13 @@ const PALETTE = {
 } as const;
 
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-const lerpPoint = (a: Point, b: Point, t: number): Point => ({ x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t) });
+
+/** Converte uma diferença em células para o menor caminho num tabuleiro que "dá a volta". */
+function unwrap(d: number, size: number): number {
+  if (d > size / 2) return d - size;
+  if (d < -size / 2) return d + size;
+  return d;
+}
 
 function mixColor(a: readonly number[], b: readonly number[], t: number): string {
   const [r, g, bl] = a.map((v, i) => Math.round(lerp(v, b[i]!, t)));
@@ -99,9 +105,17 @@ export class CanvasRenderer implements FrameRenderer {
   }
 
   private drawSnake(state: GameState, previous: Point[], t: number): void {
-    const { ctx, cell } = this;
+    const { ctx, cell, cols, rows } = this;
     const current = state.snake;
-    const head = lerpPoint(previous[0] ?? current[0]!, current[0]!, t);
+
+    /** Diferença de `a` até `b` pelo caminho mais curto — atravessando a borda, se for o caso. */
+    const delta = (a: Point, b: Point): Point => ({ x: unwrap(b.x - a.x, cols), y: unwrap(b.y - a.y, rows) });
+
+    // A cabeça é desenhada chegando à célula atual; se atravessou a parede,
+    // ela aparece entrando pelo lado oposto em vez de cruzar o tabuleiro.
+    const headFrom = previous[0] ?? current[0]!;
+    const headMove = delta(headFrom, current[0]!);
+    const head = { x: current[0]!.x - headMove.x * (1 - t), y: current[0]!.y - headMove.y * (1 - t) };
 
     // Corpo como uma linha contínua pelos centros das células — a cabeça e a
     // cauda são interpoladas, o resto já está na posição do passo anterior.
@@ -109,7 +123,24 @@ export class CanvasRenderer implements FrameRenderer {
     for (let i = 1; i < current.length - 1; i++) points.push(current[i]!);
     if (current.length > 1) {
       const last = current.length - 1;
-      points.push(lerpPoint(previous[last] ?? current[last]!, current[last]!, t));
+      const tailFrom = previous[last] ?? current[last]!;
+      const tailMove = delta(tailFrom, current[last]!);
+      points.push({ x: tailFrom.x + tailMove.x * t, y: tailFrom.y + tailMove.y * t });
+    }
+
+    // Trechos entre pontos vizinhos. Quando dois pontos estão em lados opostos
+    // (paredes atravessáveis), o trecho vira dois tocos que saem pelas bordas.
+    const pieces: Array<[Point, Point, number]> = [];
+    for (let i = 1; i < points.length; i++) {
+      const a = points[i - 1]!;
+      const b = points[i]!;
+      const d = delta(a, b);
+      if (Math.abs(b.x - a.x - d.x) < 1e-6 && Math.abs(b.y - a.y - d.y) < 1e-6) {
+        pieces.push([a, b, i]);
+      } else {
+        pieces.push([a, { x: a.x + d.x, y: a.y + d.y }, i]);
+        pieces.push([{ x: b.x - d.x, y: b.y - d.y }, b, i]);
+      }
     }
 
     const toPx = (p: Point): Point => ({ x: (p.x + 0.5) * cell, y: (p.y + 0.5) * cell });
@@ -123,24 +154,31 @@ export class CanvasRenderer implements FrameRenderer {
     ctx.strokeStyle = mixColor(PALETTE.snakeHead, PALETTE.snakeTail, 0.5);
     ctx.lineWidth = cell * 0.7;
     ctx.beginPath();
-    points.forEach((p, i) => {
-      const { x, y } = toPx(p);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
-    });
+    for (const [a, b] of pieces) {
+      const pa = toPx(a);
+      const pb = toPx(b);
+      ctx.moveTo(pa.x, pa.y);
+      ctx.lineTo(pb.x, pb.y);
+    }
+    if (!pieces.length) {
+      const p = toPx(head);
+      ctx.moveTo(p.x, p.y);
+      ctx.lineTo(p.x, p.y);
+    }
     ctx.stroke();
     ctx.restore();
 
-    // Degradê da cabeça até a cauda, segmento por segmento (da cauda para a cabeça)
-    for (let i = points.length - 1; i > 0; i--) {
-      const a = toPx(points[i]!);
-      const b = toPx(points[i - 1]!);
+    // Degradê da cabeça até a cauda, trecho por trecho (da cauda para a cabeça)
+    for (let k = pieces.length - 1; k >= 0; k--) {
+      const [a, b, i] = pieces[k]!;
+      const pa = toPx(a);
+      const pb = toPx(b);
       const ratio = i / Math.max(points.length - 1, 1);
       ctx.strokeStyle = mixColor(PALETTE.snakeHead, PALETTE.snakeTail, ratio);
       ctx.lineWidth = cell * lerp(0.78, 0.55, ratio);
       ctx.beginPath();
-      ctx.moveTo(a.x, a.y);
-      ctx.lineTo(b.x, b.y);
+      ctx.moveTo(pa.x, pa.y);
+      ctx.lineTo(pb.x, pb.y);
       ctx.stroke();
     }
 

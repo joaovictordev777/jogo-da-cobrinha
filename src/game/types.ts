@@ -17,6 +17,8 @@ export interface GameState {
   food: Point | null;
   score: number;
   status: Status;
+  /** Se `true`, as paredes são atravessáveis: a cobra sai de um lado e entra do outro. */
+  wrap: boolean;
 }
 
 /** Gerador de números em [0, 1). Injetável para facilitar testes. */

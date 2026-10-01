@@ -1,4 +1,4 @@
-import { GRID, MAX_QUEUED_TURNS } from './config';
+import { DIFFICULTIES, GRID, MAX_QUEUED_TURNS, type Difficulty, type DifficultyId } from './config';
 import { createInitialState, isOpposite, step, tickDuration } from './logic';
 import type { Direction, GameState, Point } from './types';
 
@@ -23,18 +23,37 @@ export class Game {
   private queue: Direction[] = [];
   private accumulator = 0;
   private lastFrame = 0;
+  private settings: Difficulty;
 
   constructor(
     private readonly renderer: FrameRenderer,
     private readonly events: GameEvents,
+    difficulty: DifficultyId = 'normal',
   ) {
-    this.state = createInitialState(GRID.cols, GRID.rows);
+    this.settings = DIFFICULTIES[difficulty];
+    this.state = this.createState();
     this.previousSnake = this.state.snake;
     requestAnimationFrame(this.frame);
   }
 
   get current(): GameState {
     return this.state;
+  }
+
+  get difficulty(): Difficulty {
+    return this.settings;
+  }
+
+  /**
+   * Troca a dificuldade. Só vale fora de uma partida em andamento; na tela
+   * inicial o tabuleiro é recriado na hora, nas outras a troca vale para a próxima partida.
+   */
+  setDifficulty(id: DifficultyId): boolean {
+    const { status } = this.state;
+    if (status === 'running' || status === 'paused') return false;
+    this.settings = DIFFICULTIES[id];
+    if (status === 'ready') this.reset();
+    return true;
   }
 
   /** Inicia (ou reinicia, se a partida acabou) o jogo. */
@@ -45,7 +64,7 @@ export class Game {
   }
 
   reset(): void {
-    this.state = createInitialState(GRID.cols, GRID.rows);
+    this.state = this.createState();
     this.previousSnake = this.state.snake;
     this.queue = [];
     this.accumulator = 0;
@@ -69,6 +88,10 @@ export class Game {
 
     // Na tela inicial, qualquer seta já começa a partida.
     if (status === 'ready') this.start();
+  }
+
+  private createState(): GameState {
+    return createInitialState(GRID.cols, GRID.rows, { wrap: this.settings.wrap });
   }
 
   private setStatus(status: GameState['status']): void {
@@ -101,15 +124,15 @@ export class Game {
     let progress = 1;
     if (this.state.status === 'running') {
       this.accumulator += delta;
-      let duration = tickDuration(this.state.score);
+      let duration = tickDuration(this.state.score, this.settings);
       while (this.accumulator >= duration && this.state.status === 'running') {
         this.accumulator -= duration;
         this.tick();
-        duration = tickDuration(this.state.score);
+        duration = tickDuration(this.state.score, this.settings);
       }
       progress = this.state.status === 'running' ? this.accumulator / duration : 1;
     } else if (this.state.status === 'paused') {
-      progress = this.accumulator / tickDuration(this.state.score);
+      progress = this.accumulator / tickDuration(this.state.score, this.settings);
     }
 
     this.renderer.render(this.state, this.previousSnake, progress, now);

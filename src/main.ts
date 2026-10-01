@@ -2,20 +2,23 @@ import '@fontsource-variable/space-grotesk';
 import './styles.css';
 
 import { Sound } from './audio/Sound';
-import { GRID } from './game/config';
+import { DEFAULT_DIFFICULTY, DIFFICULTIES, DIFFICULTY_ORDER, GRID, isDifficultyId, type DifficultyId } from './game/config';
 import { Game } from './game/Game';
 import type { Direction, GameState, Status } from './game/types';
 import { bindKeyboard } from './input/keyboard';
 import { bindSwipe } from './input/touch';
 import { CanvasRenderer } from './render/Renderer';
-import { KEYS, loadFlag, loadNumber, saveFlag, saveNumber } from './storage/storage';
+import { highScoreKey, KEYS, loadFlag, loadNumber, loadString, saveFlag, saveNumber, saveString } from './storage/storage';
 import { $ } from './ui/dom';
 import { Hud } from './ui/Hud';
 import { buildSteps, Tutorial } from './ui/Tutorial';
 
 const isTouch = window.matchMedia('(pointer: coarse)').matches;
 
-let best = loadNumber(KEYS.highScore);
+const savedDifficulty = loadString(KEYS.difficulty);
+const initialDifficulty: DifficultyId = isDifficultyId(savedDifficulty) ? savedDifficulty : DEFAULT_DIFFICULTY;
+
+let best = loadNumber(highScoreKey(initialDifficulty));
 let recordAtStart = best;
 let lastStatus: Status = 'ready';
 
@@ -26,6 +29,7 @@ const hud = new Hud({
   onPause: () => game.togglePause(),
   onMute: toggleMute,
   onHelp: openTutorial,
+  onDifficulty: selectDifficulty,
 });
 
 const tutorial = new Tutorial(buildSteps(isTouch), {
@@ -39,13 +43,17 @@ const tutorial = new Tutorial(buildSteps(isTouch), {
   },
 });
 
-const game = new Game(new CanvasRenderer($<HTMLCanvasElement>('canvas'), GRID.cols, GRID.rows), {
-  onChange: handleChange,
-  onEat: (state) => {
-    hud.bump();
-    sound.eat(state.score);
+const game = new Game(
+  new CanvasRenderer($<HTMLCanvasElement>('canvas'), GRID.cols, GRID.rows),
+  {
+    onChange: handleChange,
+    onEat: (state) => {
+      hud.bump();
+      sound.eat(state.score);
+    },
   },
-});
+  initialDifficulty,
+);
 
 function handleChange(state: GameState): void {
   const previous = lastStatus;
@@ -54,7 +62,7 @@ function handleChange(state: GameState): void {
   if (state.status === 'running' && state.score === 0) recordAtStart = best;
   if (state.score > best) {
     best = state.score;
-    saveNumber(KEYS.highScore, best);
+    saveNumber(highScoreKey(game.difficulty.id), best);
   }
 
   playStatusSound(previous, state.status);
@@ -73,6 +81,20 @@ function playStatusSound(from: Status, to: Status): void {
     if (from === 'paused') sound.resume();
     else sound.start(); // começo ou recomeço de partida
   }
+}
+
+function selectDifficulty(id: DifficultyId): void {
+  const { status } = game.current;
+  if (id === game.difficulty.id || status === 'running' || status === 'paused') return;
+
+  // Cada dificuldade tem o próprio recorde.
+  best = loadNumber(highScoreKey(id));
+  recordAtStart = best;
+  saveString(KEYS.difficulty, id);
+  hud.setDifficulty(DIFFICULTIES[id]);
+  game.setDifficulty(id);
+  hud.update(game.current, best, false);
+  sound.tick();
 }
 
 function toggleMute(): void {
@@ -111,6 +133,10 @@ bindKeyboard({
     else game.start();
   },
   onMute: toggleMute,
+  onDifficulty: (index) => {
+    const id = DIFFICULTY_ORDER[index];
+    if (id && !tutorial.isOpen) selectDifficulty(id);
+  },
 });
 
 bindSwipe($('board'), turn);
@@ -135,5 +161,6 @@ document.addEventListener('visibilitychange', () => {
 });
 
 hud.setMuted(sound.isMuted);
+hud.setDifficulty(game.difficulty);
 handleChange(game.current);
 if (!loadFlag(KEYS.tutorialSeen)) tutorial.open();
