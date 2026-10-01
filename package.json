@@ -1,0 +1,23 @@
+{
+  "name": "jogo-da-cobrinha",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Jogo da Cobrinha clássico feito com TypeScript, Canvas e Vite.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.3"
+  },
+  "dependencies": {
+    "@fontsource-variable/space-grotesk": "^5.3.0"
+  }
+}
