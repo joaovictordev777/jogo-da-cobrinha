@@ -12,15 +12,35 @@
     <main class="app">
       <header class="header">
         <h1 class="title">Cobrinha</h1>
-        <button id="pauseButton" class="icon-button" type="button" aria-label="Pausar" disabled>
-          <svg class="icon icon--pause" viewBox="0 0 24 24" aria-hidden="true">
-            <rect x="6" y="5" width="4" height="14" rx="1.5" />
-            <rect x="14" y="5" width="4" height="14" rx="1.5" />
-          </svg>
-          <svg class="icon icon--play" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z" />
-          </svg>
-        </button>
+        <div class="toolbar">
+          <button id="helpButton" class="icon-button" type="button" aria-label="Como jogar">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9.2 9.3a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.4-2.8 4.2" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />
+              <circle cx="12" cy="18.3" r="1.4" />
+            </svg>
+          </button>
+          <button id="muteButton" class="icon-button" type="button" aria-label="Desativar som" aria-pressed="false">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 9.5v5a1 1 0 0 0 1 1h2.8l4.2 3.6a.6.6 0 0 0 1-.46V5.36a.6.6 0 0 0-1-.46L7.8 8.5H5a1 1 0 0 0-1 1Z" />
+              <g class="icon__on" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M16 9a4.2 4.2 0 0 1 0 6" />
+                <path d="M18.6 6.4a8 8 0 0 1 0 11.2" />
+              </g>
+              <g class="icon__off" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="m16 9.5 5 5m0-5-5 5" />
+              </g>
+            </svg>
+          </button>
+          <button id="pauseButton" class="icon-button" type="button" aria-label="Pausar" disabled>
+            <svg class="icon icon--pause" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="6" y="5" width="4" height="14" rx="1.5" />
+              <rect x="14" y="5" width="4" height="14" rx="1.5" />
+            </svg>
+            <svg class="icon icon--play" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z" />
+            </svg>
+          </button>
+        </div>
       </header>
 
       <section class="hud" aria-live="polite">
@@ -43,6 +63,7 @@
             <h2 class="overlay__title" id="overlayTitle"></h2>
             <p class="overlay__text" id="overlayText"></p>
             <button class="button" id="overlayButton" type="button"></button>
+            <button class="link-button" id="overlayHelp" type="button">Como jogar?</button>
           </div>
         </div>
       </div>
@@ -57,8 +78,22 @@
       <footer class="hint">
         <span><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> ou <kbd>WASD</kbd> para mover</span>
         <span><kbd>Espaço</kbd> para pausar</span>
+        <span><kbd>M</kbd> para som</span>
       </footer>
     </main>
+
+    <dialog class="tutorial" id="tutorial" aria-label="Como jogar">
+      <div class="tutorial__body">
+        <div class="tutorial__art" id="tutorialArt"></div>
+        <h2 class="tutorial__title" id="tutorialTitle"></h2>
+        <p class="tutorial__text" id="tutorialText"></p>
+      </div>
+      <div class="tutorial__dots" id="tutorialDots" aria-hidden="true"></div>
+      <div class="tutorial__actions">
+        <button class="link-button" id="tutorialSkip" type="button">Pular</button>
+        <button class="button" id="tutorialNext" type="button">Próximo</button>
+      </div>
+    </dialog>
 
     <script type="module" src="/src/main.ts"></script>
   </body>

@@ -17,6 +17,8 @@ export interface KeyboardHandlers {
   onPause(): void;
   /** Enter. */
   onConfirm(): void;
+  /** M. */
+  onMute(): void;
 }
 
 export function bindKeyboard(handlers: KeyboardHandlers): void {
@@ -44,6 +46,9 @@ export function bindKeyboard(handlers: KeyboardHandlers): void {
         if (onButton) return;
         event.preventDefault();
         handlers.onConfirm();
+        break;
+      case 'KeyM':
+        handlers.onMute();
         break;
     }
   });
